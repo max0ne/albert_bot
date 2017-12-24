@@ -1,0 +1,73 @@
+{
+  "extends": [
+    "tslint:latest"
+  ],
+  "rules": {
+    "class-name": true,
+    "comment-format": [
+      true,
+      "check-space"
+    ],
+    "indent": [
+      true,
+      "spaces",
+      2
+    ],
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-whitespace"
+    ],
+    "no-var-keyword": true,
+    "quotemark": [
+      true,
+      "single"
+    ],
+    "semicolon": [
+      true,
+      "always",
+      "ignore-bound-class-methods"
+    ],
+    "typedef-whitespace": [
+      true,
+      {
+        "call-signature": "nospace",
+        "index-signature": "nospace",
+        "parameter": "nospace",
+        "property-declaration": "nospace",
+        "variable-declaration": "nospace"
+      },
+      {
+        "call-signature": "onespace",
+        "index-signature": "onespace",
+        "parameter": "onespace",
+        "property-declaration": "onespace",
+        "variable-declaration": "onespace"
+      }
+    ],
+    "no-internal-module": true,
+    "no-trailing-whitespace": true,
+    "no-null-keyword": true,
+    "prefer-const": true,
+    "jsdoc-format": true,
+    "jsx-no-lambda": false,
+    "jsx-no-multiline-js": false,
+    "no-object-literal-type-assertion": false,
+    "no-console": [
+      false
+    ],
+    "no-var-requires": false,
+    "object-literal-sort-keys": false,
+    "no-unused-expression": [
+      true,
+      "allow-fast-null-checks"
+    ],
+    "no-empty": false,
+    "interface-name": [
+      false
+    ],
+    "max-line-length": false,
+    "no-shadowed-variable": false,
+    "ban-types": [true, ["Function", true]]
+  }
+}
