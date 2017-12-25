@@ -6,9 +6,9 @@ export function viewClasses(classes: ClassType[], clickable = false) {
 
 export function viewClass(cls: ClassType, clickable = false) {
   if (clickable) {
-    return `[${cls.section} - ${cls.classTitle} - ${cls.classNumber} - ${cls.status}](${cls.href})`;
+    return `[${cls.section} - ${cls.classTitle.toLowerCase()} - ${cls.classNumber} - ${cls.status === 'Open' ? '✅' : '❌'}](${cls.href})`;
   } else {
-    return `[${cls.section}] ${cls.classTitle} - ${cls.classNumber} - ${cls.status}`;
+    return `[${cls.section}] ${cls.classTitle.toLowerCase()} - ${cls.classNumber} - ${cls.status === 'Open' ? '✅' : '❌'}`;
   }
 }
 

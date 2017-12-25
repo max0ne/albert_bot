@@ -61,7 +61,9 @@ bot.command('all', async (ctx: Context) => {
 bot.command('sync', async (ctx: Context) => {
   const date = new Date();
   ctx.reply('syncing');
-  await sync.sync();
+  await sync.sync((...msg) => {
+    msg.forEach(ctx.reply);
+  });
   ctx.reply(`synced in ${(new Date() as any - (date as any)) / 1000} seconds`);
 });
 
@@ -76,26 +78,46 @@ const waitingForUnwatchIds = [] as string[];
  */
 bot.command('watch', async (ctx: Context) => {
   const chatid = ctx.from.id;
+  const param = /\/watch\s+(.*)$/g.exec(ctx.message.text)[1];
+  if (param) {
+    const classes = await AlbertDB.searchClass(param);
+    // if provided can find exactly 1 class to watch put that to watch
+    if (classes.length === 1) {
+      ctx.reply(`Putting ${viewClass(classes[0])} to watch`);
+      return watchClass(chatid, classes[0].section, ctx);
+    }
+    // if found more classes match search ask which one to choose
+    else if (classes.length > 1) {
+      return chooseClassToWatch(classes);
+    }
+    // else fall through
+  }
 
+  /**
+   * no param - give all `unwatched` classes as options
+   */
   const watching = await AlbertDB.getWatches(chatid);
   const classes =
     (await AlbertDB.getClasses())
       .filter((cls) => !_.includes(watching, cls.section))
       .filter((cls) => cls.status === 'Closed');
+  chooseClassToWatch(classes);
 
-  if (waitingForWatchIds.indexOf(chatid) === -1) {
-    waitingForWatchIds.push(chatid);
+  function chooseClassToWatch(classes: ClassType[]) {
+    if (waitingForWatchIds.indexOf(chatid) === -1) {
+      waitingForWatchIds.push(chatid);
+    }
+
+    bot.telegram.sendMessage(chatid, 'Select class to watch', {
+      reply_markup: {
+        one_time_keyboard: true,
+        resize_keyboard: true,
+        keyboard: classes.map((cls) => ([{
+          text: viewClass(cls),
+        }])),
+      },
+    });
   }
-
-  bot.telegram.sendMessage(chatid, 'Select class to watch', {
-    reply_markup: {
-      one_time_keyboard: true,
-      resize_keyboard: true,
-      keyboard: classes.map((cls) => ([{
-        text: viewClass(cls),
-      }])),
-    },
-  });
 });
 
 /**
@@ -111,21 +133,21 @@ bot.on('message', async (ctx: Context, next: NextFunction) => {
 
   if (_.includes(waitingForWatchIds, chatid)) {
     _.pull(waitingForWatchIds, chatid);
-    return watchClass(chatid, text, section, ctx);
+    return watchClass(chatid, section, ctx);
   }
   if (_.includes(waitingForUnwatchIds, chatid)) {
     _.pull(waitingForUnwatchIds, chatid);
-    return unwatchClass(chatid, text, section, ctx);
+    return unwatchClass(chatid, section, ctx);
   }
 });
 
-async function watchClass(chatid: string, text: string, section: string, ctx: Context) {
+async function watchClass(chatid: string, section: string, ctx: Context) {
   const watchings = await AlbertDB.addWatch(chatid, section);
   ctx.reply(`Added ${viewClass((await AlbertDB.getClassesBySections([section]))[0])} to watching`);
   ctx.reply(`You are watching ${watchings.length} classes:\n${viewClasses(await AlbertDB.getClassesBySections(watchings))}`);
 }
 
-async function unwatchClass(chatid: string, text: string, section: string, ctx: Context) {
+async function unwatchClass(chatid: string, section: string, ctx: Context) {
   const watchings = await AlbertDB.removeWatch(chatid, section);
   ctx.reply(`Removed ${viewClass((await AlbertDB.getClassesBySections([section]))[0])} from watching`);
   ctx.reply(`You are watching ${watchings.length} classes:\n${viewClasses(await AlbertDB.getClassesBySections(watchings))}`);

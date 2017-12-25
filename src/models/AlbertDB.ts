@@ -29,6 +29,23 @@ export async function getClasses() {
   return classes;
 }
 
+export async function searchClass(keyword: string, within?: ClassType[]) {
+  keyword = keyword.toLowerCase();
+
+  const classes = within || await getClasses();
+  return classes.filter((cls) => (
+    [
+      'classNumber',
+      'classTitle',
+      'section',
+    ].some((key) => (cls[key] || '').toLowerCase().includes(keyword))
+  ));
+}
+
+export async function searchWatchedClasses(keyword: string, chatid: string) {
+  return searchClass(keyword, await getWatchedClasses(chatid));
+}
+
 export async function putSynced(classes: ClassType[]) {
   await db.put('cls', classes);
   await db.put('last_sync', (new Date()).getTime());

@@ -1,4 +1,5 @@
 export interface ClassType {
+  [key: string]: string;
 
   /**
    * CS-GY 9963
