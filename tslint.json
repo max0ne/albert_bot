@@ -28,6 +28,9 @@
       "always",
       "ignore-bound-class-methods"
     ],
+    "ordered-imports": [
+      false
+    ],
     "typedef-whitespace": [
       true,
       {
