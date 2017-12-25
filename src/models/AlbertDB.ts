@@ -29,18 +29,13 @@ export async function getClasses() {
   return classes;
 }
 
-export async function allAvailableClasses() {
-  const classes = await getClasses();
-  return classes;
-}
-
 export async function putSynced(classes: ClassType[]) {
   await db.put('cls', classes);
   await db.put('last_sync', (new Date()).getTime());
 }
 
 export async function lastSyncDate() {
-  return new Date(db.get('last_sync') as any as number);
+  return new Date(parseInt(await db.get('last_sync'), 10));
 }
 
 export async function addWatch(chatid: string, section: string) {
@@ -52,6 +47,10 @@ export async function addWatch(chatid: string, section: string) {
   return thisWatchings;
 }
 
+export async function getWatches(chatid: string) {
+  return (await db.get(`watching_${chatid}`) || []) as string[];
+}
+
 export async function removeWatch(chatid: string, section: string) {
   const thisWatchings = await getWatches(chatid);
   _.pull(thisWatchings, section);
@@ -59,12 +58,26 @@ export async function removeWatch(chatid: string, section: string) {
   return thisWatchings;
 }
 
-export async function getWatches(chatid: string) {
-  return (await db.get(`watching_${chatid}`) || []) as string[];
+/**
+ * internal
+ */
+async function putWatches(chatid: string, watches: string[]) {
+  return await Promise.all([
+    db.put(`watching_${chatid}`, watches),
+    watches.length > 0 ? rememberWatchedId(chatid) : forgetWatchedId(chatid),
+  ]);
 }
 
-export async function putWatches(chatid: string, watches: string[]) {
-  return await db.put(`watching_${chatid}`, watches);
+export async function getWatchedIds() {
+  return (await db.get('watches') || []) as string[];
+}
+
+async function rememberWatchedId(chatid: string) {
+  await db.put('watches', _.uniq([...await getWatchedIds(), chatid]));
+}
+
+async function forgetWatchedId(chatid: string) {
+  await db.put('watches', _.pull(await getWatchedIds(), chatid));
 }
 
 export async function getClassesBySections(sections: string[]) {

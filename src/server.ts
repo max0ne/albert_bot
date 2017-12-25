@@ -1,11 +1,17 @@
-const Telegraf = require('telegraf');
 require('dotenv').config();
 
 import * as _ from 'lodash';
-import * as AlbertDB from './models/AlbertDB';
+const Telegraf = require('telegraf');
+const TelegrafLogger = require('telegraf-logger');
+
 import * as sync from './controllers/sync';
+import * as trigger from './controllers/trigger';
+
+import * as AlbertDB from './models/AlbertDB';
 import { ClassType } from './models/alberteer_types';
-import { Context } from 'vm';
+
+import { viewClass, viewClasses } from './view/view';
+import * as view from './view/view';
 
 type ReplyFunction = (msg: string) => void;
 interface Context {
@@ -34,16 +40,11 @@ bot.use(async (ctx: any, next: (_: any) => Promise<any>) => {
   }
 });
 
-/**
- * view
- */
-function viewClasses(classes: ClassType[]) {
-  return classes.map(viewClass).join('\n');
-}
-
-function viewClass(cls: ClassType) {
-  return `[${cls.section}] ${cls.classTitle} - ${cls.classNumber} - ${cls.status}`;
-}
+bot.use(new TelegrafLogger({
+  // replace or remove placeholders as necessary
+  format: '%updateType => @%username %firstName %lastName (%fromId): <%updateSubType> %content', // default
+  contentLength: 100, // default
+}).middleware());
 
 /**
  * get all classes command
@@ -51,7 +52,7 @@ function viewClass(cls: ClassType) {
 bot.command('all', async (ctx: Context) => {
   const classes = await AlbertDB.getClasses();
   ctx.reply(viewClasses(classes) || 'no classes synced');
-  ctx.reply(`Last synced at ${await AlbertDB.lastSyncDate()}`);
+  ctx.reply(`Last synced ${view.sometimgAgo(await AlbertDB.lastSyncDate())}`);
 });
 
 /**
@@ -163,4 +164,17 @@ bot.command('unwatch', async (ctx: Context) => {
   });
 });
 
+bot.command('run', async (ctx: Context) => {
+  await trigger.__run(bot, true);
+  ctx.reply('run');
+});
+
+/**
+ * start bot
+ */
 bot.startPolling();
+
+/**
+ * kick off trigger
+ */
+trigger.start(bot);
