@@ -1,3 +1,5 @@
+import * as _ from 'lodash';
+
 import * as db from './db';
 import { ClassType } from './alberteer_types';
 
@@ -39,4 +41,38 @@ export async function putSynced(classes: ClassType[]) {
 
 export async function lastSyncDate() {
   return new Date(db.get('last_sync') as any as number);
+}
+
+export async function addWatch(chatid: string, section: string) {
+  const thisWatchings = await getWatches(chatid);
+  if (thisWatchings.indexOf(section) === -1) {
+    thisWatchings.push(section);
+  }
+  await putWatches(chatid, thisWatchings);
+  return thisWatchings;
+}
+
+export async function removeWatch(chatid: string, section: string) {
+  const thisWatchings = await getWatches(chatid);
+  _.pull(thisWatchings, section);
+  await putWatches(chatid, thisWatchings);
+  return thisWatchings;
+}
+
+export async function getWatches(chatid: string) {
+  return (await db.get(`watching_${chatid}`) || []) as string[];
+}
+
+export async function putWatches(chatid: string, watches: string[]) {
+  return await db.put(`watching_${chatid}`, watches);
+}
+
+export async function getClassesBySections(sections: string[]) {
+  const classes = await getClasses();
+  return sections.map((sec) => classes.find((cls) => cls.section === sec))
+    .filter((cls) => !_.isNil(cls));
+}
+
+export async function getWatchedClasses(chatid: string) {
+  return await getClassesBySections(await getWatches(chatid));
 }
