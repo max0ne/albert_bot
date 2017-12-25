@@ -49,7 +49,7 @@ async function run(bot: any) {
     debug(exception);
   }
   finally {
-    setTimeout(() => run(bot), Math.min(1, parseFloat(process.env.POLL_INTERVAL || 5)) * 60 * 1000);
+    setTimeout(() => run(bot), Math.max(1, parseFloat(process.env.POLL_INTERVAL || 5)) * 60 * 1000);
   }
 }
 

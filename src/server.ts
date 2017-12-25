@@ -78,7 +78,10 @@ bot.command('watch', async (ctx: Context) => {
   const chatid = ctx.from.id;
 
   const watching = await AlbertDB.getWatches(chatid);
-  const classes = (await AlbertDB.getClasses()).filter((cls) => !_.includes(watching, cls.section));
+  const classes =
+    (await AlbertDB.getClasses())
+      .filter((cls) => !_.includes(watching, cls.section))
+      .filter((cls) => cls.status === 'Closed');
 
   if (waitingForWatchIds.indexOf(chatid) === -1) {
     waitingForWatchIds.push(chatid);
