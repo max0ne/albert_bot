@@ -12,7 +12,11 @@ ADD . /usr/src/app
 # https://github.com/cazala/coin-hive/issues/76
 RUN yarn global add npm@5
 
-# install packages
+# install alberteer first
+WORKDIR /usr/src/app/alberteer
+RUN npm i
+
+WORKDIR /usr/src/app
 RUN npm i
 
 # Build Puppeteer stuff, Puppeteer requies some tricky steps

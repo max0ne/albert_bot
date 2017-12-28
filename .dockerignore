@@ -1,2 +1,5 @@
+.git
+.elasticbeanstalk
+.env
 node_modules/
 alberteer/node_modules/
