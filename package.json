@@ -38,6 +38,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
+    "albert": "file:alberteer",
     "async": "^2.1.2",
     "aws-sdk": "^2.175.0",
     "bcrypt-nodejs": "^0.0.3",
