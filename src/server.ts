@@ -1,4 +1,7 @@
-require('dotenv').config();
+import * as fs from 'fs';
+if (fs.existsSync('.env')) {
+  require('dotenv').config();
+}
 
 import * as _ from 'lodash';
 const Telegraf = require('telegraf');
@@ -78,7 +81,7 @@ const waitingForUnwatchIds = [] as string[];
  */
 bot.command('watch', async (ctx: Context) => {
   const chatid = ctx.from.id;
-  const param = /\/watch\s+(.*)$/g.exec(ctx.message.text)[1];
+  const param = (/\/watch\s+(.*)$/g.exec(ctx.message.text) || [])[1];
   if (param) {
     const classes = await AlbertDB.searchClass(param);
     // if provided can find exactly 1 class to watch put that to watch
