@@ -15,12 +15,21 @@ async function notifyClassOpened(bot: any, chatid: string, openedWatchedClasses:
 }
 
 export async function __run(bot: any, nosync: boolean = false) {
+  // remember old
+  const oldClasses = await AlbertDB.getClasses();
+
+  // sync them
   if (!nosync) {
     await sync.sync();
   }
 
+  // get newly synced
   const classes = await AlbertDB.getClasses();
-  const openClasses = classes.filter((cls) => cls.status === 'Open');
+
+  // get `used to be closed but now opened` classes
+  const openClasses = classes.filter((cls) =>
+    cls.status === 'Open' &&  // now open
+    (oldClasses.find((old) => old.classNumber === cls.classNumber) || {} as ClassType).status !== 'Open'); // was NOT open
   const openClassesSections = _.map(openClasses, 'section');
 
   const  watchingChatids = await AlbertDB.getWatchedIds();
