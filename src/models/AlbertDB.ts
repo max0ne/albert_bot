@@ -79,7 +79,7 @@ export async function removeWatch(chatid: string, section: string) {
  * internal
  */
 async function putWatches(chatid: string, watches: string[]) {
-  return await Promise.all([
+  return Promise.all([
     db.put(`watching_${chatid}`, watches),
     watches.length > 0 ? rememberWatchedId(chatid) : forgetWatchedId(chatid),
   ]);
@@ -104,5 +104,5 @@ export async function getClassesBySections(sections: string[]) {
 }
 
 export async function getWatchedClasses(chatid: string) {
-  return await getClassesBySections(await getWatches(chatid));
+  return getClassesBySections(await getWatches(chatid));
 }

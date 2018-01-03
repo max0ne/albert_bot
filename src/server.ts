@@ -3,6 +3,7 @@ if (fs.existsSync('.env')) {
   require('dotenv').config();
 }
 
+import * as http from 'http';
 import * as _ from 'lodash';
 const Telegraf = require('telegraf');
 const TelegrafLogger = require('telegraf-logger');
@@ -30,6 +31,11 @@ interface Context {
 type NextFunction = (ctx: Context) => void;
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
+
+/**
+ * create an http server to supress aws warnings
+ */
+http.createServer().listen(process.env.PORT || 80);
 
 /**
  * catch exceptions middleware
