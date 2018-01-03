@@ -35,7 +35,7 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 /**
  * create an http server to supress aws warnings
  */
-http.createServer().listen(process.env.PORT || 80);
+http.createServer().listen(process.env.PORT || 8080);
 
 /**
  * catch exceptions middleware
