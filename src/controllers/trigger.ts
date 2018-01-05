@@ -2,8 +2,9 @@ import * as _ from 'lodash';
 import * as dbg from 'debug';
 
 import * as AlbertDB from '../models/AlbertDB';
+import * as StatusDB from '../models/StatusDB';
 import * as sync from './sync';
-import { ClassType } from '../models/alberteer_types';
+import { ClassType, SyncStatType } from '../models/alberteer_types';
 import { viewClass, viewClasses } from '../view/view';
 
 const debug = dbg('alberteerbot');
@@ -14,7 +15,7 @@ async function notifyClassOpened(bot: any, chatid: string, openedWatchedClasses:
   });
 }
 
-export async function __run(bot: any, nosync: boolean = false) {
+export async function __run(bot: any, nosync = false) {
   // remember old
   const oldClasses = await AlbertDB.getClasses();
 

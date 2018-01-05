@@ -56,3 +56,13 @@ export interface ClassType {
    */
   status: string;
 }
+
+export interface SyncStatType {
+  syncedAt: Date;
+  success: Boolean;
+  stats?: {
+    opens: number;
+    closes: number;
+  };
+  error?: string;
+}

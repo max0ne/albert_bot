@@ -12,9 +12,10 @@ import * as sync from './controllers/sync';
 import * as trigger from './controllers/trigger';
 
 import * as AlbertDB from './models/AlbertDB';
-import { ClassType } from './models/alberteer_types';
+import * as StatusDB from './models/StatusDB';
+import { ClassType, SyncStatType } from './models/alberteer_types';
 
-import { viewClass, viewClasses } from './view/view';
+import { viewClass, viewClasses, viewStats } from './view/view';
 import * as view from './view/view';
 
 type ReplyFunction = (msg: string) => void;
@@ -72,7 +73,7 @@ bot.command('sync', async (ctx: Context) => {
   ctx.reply('syncing');
   await sync.sync((...msg) => {
     msg.forEach(ctx.reply);
-  });
+  }, false);
   ctx.reply(`synced in ${(new Date() as any - (date as any)) / 1000} seconds`);
 });
 
@@ -201,6 +202,14 @@ bot.command('unwatch', async (ctx: Context) => {
 bot.command('run', async (ctx: Context) => {
   await trigger.__run(bot, true);
   ctx.reply('run');
+});
+
+/**
+ * stats
+ */
+bot.command('stats', async (ctx: Context) => {
+  const stats = await StatusDB.syncStats();
+  ctx.reply(viewStats(stats));
 });
 
 /**

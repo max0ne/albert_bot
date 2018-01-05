@@ -71,6 +71,7 @@
     ],
     "max-line-length": false,
     "no-shadowed-variable": false,
-    "ban-types": [true, ["Function", true]]
+    "ban-types": [true, ["Function", true]],
+    "variable-name": false
   }
 }

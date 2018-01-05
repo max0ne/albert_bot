@@ -1,9 +1,18 @@
 import * as _ from 'lodash';
 
 import * as db from './db';
-import { ClassType } from './alberteer_types';
+import { ClassType, SyncStatType } from './alberteer_types';
+
+let _cachedClasses: ClassType[];
 
 export async function getClasses() {
+  if (_.isNil(_cachedClasses)) {
+    _cachedClasses = await __getClasses();
+  }
+  return _cachedClasses;
+}
+
+async function __getClasses() {
   // remove phd / ms thesis stuff / ms reading
   let classes = (await db.get('cls')) as ClassType[] || [];
   const blacklistKeywords = [
@@ -47,6 +56,7 @@ export async function searchWatchedClasses(keyword: string, chatid: string) {
 }
 
 export async function putSynced(classes: ClassType[]) {
+  _cachedClasses = undefined;
   await db.put('cls', classes);
   await db.put('last_sync', (new Date()).getTime());
 }
