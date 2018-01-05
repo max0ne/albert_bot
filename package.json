@@ -1,12 +1,12 @@
 {
-  "name": "express-typescript-starter",
+  "name": "alberteerbot",
   "version": "0.1.0",
-  "description": "A starting point for Node.js express apps with TypeScript",
+  "description": "Telegram bot for NYU Albert",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sahat/hackathon-starter.git"
+    "url": "https://github.com/max0ne/alberteerbot.git"
   },
-  "author": "Bowden Kelly",
+  "author": "Mingfei Huang",
   "license": "MIT",
   "scripts": {
     "start": "npm run build && npm run watch",
