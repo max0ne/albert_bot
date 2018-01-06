@@ -24,7 +24,7 @@ export function sometimgAgo(date: Date) {
 export function viewStats(stats: SyncStatType[]) {
   return stats.map((st) => {
     const time = moment(st.syncedAt).tz('America/New_York').format('LTS');
-    const desc = st.success ? `${st.stats.opens} opens, ${st.stats.closes} closes` : st.error;
+    const desc = st.success ? `${st.stats.opens} opens, ${st.stats.closes} closes` : st.error.split('\n').find((line) => line.length > 0);
     return `${ruokay(st.success)} @${time} - ${desc}`;
   }).join('\n') || 'No available stats';
 }

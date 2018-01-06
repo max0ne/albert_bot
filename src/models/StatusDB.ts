@@ -19,7 +19,7 @@ export async function justSyncFailed(error: any) {
   pushStat({
     syncedAt: (new Date().getTime() as any),
     success: false,
-    error: error ? error.toString() : 'Empty Error Message',
+    error: error ? error.message || error.toString() : 'Empty Error Message',
   });
 }
 

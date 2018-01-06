@@ -50,6 +50,33 @@ bot.use(async (ctx: any, next: (_: any) => Promise<any>) => {
   }
 });
 
+/**
+ * avoid `MESSAGE_TOO_LONG` middleware
+ */
+bot.use((ctx: any, next: (_: any) => any) => {
+  const oldReply = ctx.reply;
+  ctx.reply = (msg: string) => {
+    if (!_.isString(msg)) {
+      return oldReply(msg);
+    }
+
+    const splittedMsgs = [] as string[];
+    let current = '';
+    msg.split('\n').forEach((line) => {
+      if (current.length + line.length > 4000) {
+        splittedMsgs.push(current);
+        current = line;
+      } else {
+        current = [current, line].join('\n');
+      }
+    });
+    splittedMsgs.push(current);
+    return Promise.all(splittedMsgs.map(oldReply));
+  };
+
+  next(ctx);
+});
+
 bot.use(new TelegrafLogger({
   // replace or remove placeholders as necessary
   format: '%updateType => @%username %firstName %lastName (%fromId): <%updateSubType> %content', // default
@@ -69,12 +96,19 @@ bot.command('all', async (ctx: Context) => {
  * force sync classes
  */
 bot.command('sync', async (ctx: Context) => {
+  const param = (/\/sync\s+(.*)$/g.exec(ctx.message.text) || [])[1];
+  const headless = param && param.indexOf('headless') !== -1;
   const date = new Date();
   ctx.reply('syncing');
-  await sync.sync((...msg) => {
-    msg.forEach(ctx.reply);
-  }, false);
-  ctx.reply(`synced in ${(new Date() as any - (date as any)) / 1000} seconds`);
+  try {
+    await sync.sync((...msg) => {
+      msg.forEach(ctx.reply);
+    }, headless);
+    ctx.reply(`synced successed in ${(new Date() as any - (date as any)) / 1000} seconds`);
+  } catch (error) {
+    ctx.reply(`sync failed`);
+    ctx.reply(error.toString());
+  }
 });
 
 /**

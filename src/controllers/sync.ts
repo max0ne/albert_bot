@@ -9,5 +9,6 @@ export async function sync(logger?: (...msg: string[]) => void, headless = true)
     StatusDB.justSyncSuccessed(classes);
   } catch (error) {
     StatusDB.justSyncFailed(error);
+    throw error;
   }
 }
