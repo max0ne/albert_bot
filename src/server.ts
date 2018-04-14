@@ -1,42 +1,26 @@
 import * as fs from 'fs';
-if (fs.existsSync('.env')) {
-  require('dotenv').config();
-}
+fs.existsSync('.env') && require('dotenv').config();
 
 import * as http from 'http';
 import * as _ from 'lodash';
 const Telegraf = require('telegraf');
 const TelegrafLogger = require('telegraf-logger');
 
+import * as common from './common/common';
 import * as sync from './controllers/sync';
 import * as trigger from './controllers/trigger';
 
 import * as AlbertDB from './models/AlbertDB';
 import * as StatusDB from './models/StatusDB';
-import { ClassType, SyncStatType } from './models/alberteer_types';
+import { ClassType, SyncStatType } from './models/albert_types';
+import { ReplyFunction, NextFunction, Context } from './types';
 
 import { viewClass, viewClasses, viewStats } from './view/view';
+// tslint:disable-next-line:no-duplicate-imports
 import * as view from './view/view';
 
-type ReplyFunction = (msg: string) => void;
-interface Context {
-  reply: ReplyFunction;
-  from: {
-    id: string;
-  };
-
-  message: {
-    text: string;
-  };
-}
-type NextFunction = (ctx: Context) => void;
-
-const bot = new Telegraf(process.env.BOT_TOKEN);
-
-/**
- * create an http server to supress aws warnings
- */
-http.createServer().listen(process.env.PORT || 8080);
+const BOT_TOKEN = common.envMust('BOT_TOKEN');
+const bot = new Telegraf(BOT_TOKEN);
 
 /**
  * catch exceptions middleware

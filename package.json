@@ -1,10 +1,10 @@
 {
-  "name": "alberteerbot",
+  "name": "albert_bot",
   "version": "0.1.0",
   "description": "Telegram bot for NYU Albert",
   "repository": {
     "type": "git",
-    "url": "https://github.com/max0ne/alberteerbot.git"
+    "url": "https://github.com/max0ne/albert_bot.git"
   },
   "author": "Mingfei Huang",
   "license": "MIT",
@@ -13,7 +13,6 @@
     "build": "npm run build-ts || npm run tslint",
     "serve": "nodemon dist/server.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve\"",
-    "test": "jest --forceExit",
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
@@ -21,24 +20,8 @@
     "serve-debug": "nodemon --inspect dist/server.js",
     "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\""
   },
-  "jest": {
-    "globals": {
-      "__TS_CONFIG__": "tsconfig.json"
-    },
-    "moduleFileExtensions": [
-      "ts",
-      "js"
-    ],
-    "transform": {
-      "^.+\\.(ts|tsx)$": "./node_modules/ts-jest/preprocessor.js"
-    },
-    "testMatch": [
-      "**/test/**/*.test.(ts|js)"
-    ],
-    "testEnvironment": "node"
-  },
   "dependencies": {
-    "albert": "file:alberteer",
+    "albert_thing": "0.0.1",
     "aws-sdk": "^2.175.0",
     "debug": "^3.1.0",
     "dotenv": "^2.0.0",
@@ -52,18 +35,13 @@
     "@types/aws-sdk": "^2.7.0",
     "@types/debug": "0.0.30",
     "@types/dotenv": "^2.0.20",
-    "@types/jest": "^19.2.2",
     "@types/lodash": "^4.14.91",
     "@types/moment-timezone": "^0.5.3",
     "@types/morgan": "^1.7.32",
     "@types/node": "^7.0.12",
-    "@types/supertest": "^2.0.0",
     "concurrently": "^3.4.0",
-    "jest": "^19.0.2",
     "nodemon": "^1.11.0",
     "shelljs": "^0.7.7",
-    "supertest": "^2.0.1",
-    "ts-jest": "^19.0.8",
     "tslint": "^5.0.0",
     "typescript": "^2.6.2"
   }

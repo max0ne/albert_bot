@@ -1,9 +1,12 @@
-const AWS = require('aws-sdk');
+import * as AWS from 'aws-sdk';
 AWS.config.update({ region: 'us-east-1' });
 
+import * as common from '../common/common';
+
 const dynamoDB = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
-const keykey = 'classes';
-const TableName = 'albert';
+
+const keykey = 'keykey';
+const TableName = common.envMust('DYNAMO_TABLE_NAME');
 
 /**
  * store something

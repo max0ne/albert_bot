@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import * as db from './db';
-import { ClassType, SyncStatType } from './alberteer_types';
+import { ClassType, SyncStatType } from './albert_types';
 
 let _cachedClasses: ClassType[];
 

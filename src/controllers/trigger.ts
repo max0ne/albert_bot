@@ -1,13 +1,15 @@
 import * as _ from 'lodash';
 import * as dbg from 'debug';
 
+import * as common from '../common/common';
 import * as AlbertDB from '../models/AlbertDB';
 import * as StatusDB from '../models/StatusDB';
 import * as sync from './sync';
-import { ClassType, SyncStatType } from '../models/alberteer_types';
+import { ClassType, SyncStatType } from '../models/albert_types';
 import { viewClass, viewClasses } from '../view/view';
 
-const debug = dbg('alberteerbot');
+const debug = dbg('albert_bot');
+const POLL_INTERVAL = common.envMust('POLL_INTERVAL');
 
 async function notifyClassOpened(bot: any, chatid: string, openedWatchedClasses: ClassType[]) {
   bot.telegram.sendMessage(chatid, `🎉 Some classes you are watching are opened\n${viewClasses(openedWatchedClasses, true)}`, {
@@ -59,7 +61,7 @@ async function run(bot: any) {
     debug(exception);
   }
   finally {
-    setTimeout(() => run(bot), Math.max(1, parseFloat(process.env.POLL_INTERVAL || 5)) * 60 * 1000);
+    setTimeout(() => run(bot), Math.max(1, parseFloat(POLL_INTERVAL || 5)) * 60 * 1000);
   }
 }
 

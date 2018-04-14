@@ -1,4 +1,4 @@
-import { ClassType, SyncStatType } from '../models/alberteer_types';
+import { ClassType, SyncStatType } from '../models/albert_types';
 import * as moment from 'moment';
 import 'moment-timezone';
 
