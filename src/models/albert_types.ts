@@ -66,3 +66,12 @@ export interface SyncStatType {
   };
   error?: string;
 }
+
+export interface WatchTableItemType {
+  [key: string]: string | number;
+
+  uid: string;
+  class_id: string;
+  created_at: number;
+  last_notified: number | undefined;
+}

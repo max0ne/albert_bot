@@ -1,7 +1,17 @@
 import * as _ from 'lodash';
 
+import * as AWS from 'aws-sdk';
+AWS.config.update({ region: 'us-east-1' });
+
+import * as common from '../common/common';
+
+const dynamoClient = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10' });
+
+const watch_table = 'albert_watch_table';
+const watch_class_to_uid_index = 'class_id_uid_index';
+
 import * as db from './db';
-import { ClassType, SyncStatType } from './albert_types';
+import { ClassType, SyncStatType, WatchTableItemType } from './albert_types';
 
 let _cachedClasses: ClassType[];
 
@@ -66,45 +76,70 @@ export async function lastSyncDate() {
 }
 
 export async function addWatch(chatid: string, section: string) {
-  const thisWatchings = await getWatches(chatid);
-  if (thisWatchings.indexOf(section) === -1) {
-    thisWatchings.push(section);
-  }
-  await putWatches(chatid, thisWatchings);
-  return thisWatchings;
+  const item: WatchTableItemType = {
+    uid: chatid.toString(),
+    class_id: section.toString(),
+    created_at: Date.now(),
+    last_notified: undefined,
+  };
+  return dynamoClient.put({
+    TableName: watch_table,
+    Item: item,
+  }).promise();
 }
 
-export async function getWatches(chatid: string) {
-  return (await db.get(`watching_${chatid}`) || []) as string[];
+export async function putLastNotified(chatid: string, section: string) {
+  return dynamoClient.put({
+    TableName: watch_table,
+    Item: {
+      uid: chatid,
+      class_id: section,
+      last_notified: Date.now(),
+    },
+  });
 }
 
-export async function removeWatch(chatid: string, section: string) {
-  const thisWatchings = await getWatches(chatid);
-  _.pull(thisWatchings, section);
-  await putWatches(chatid, thisWatchings);
-  return thisWatchings;
+export async function getWatches(chatid: string): Promise<WatchTableItemType[]> {
+  return (await dynamoClient.query({
+    TableName: watch_table,
+    KeyConditions: {
+      uid: {
+        AttributeValueList: [chatid.toString()],
+        ComparisonOperator: 'EQ',
+      },
+    },
+  }).promise()).Items as WatchTableItemType[];
 }
 
 /**
- * internal
+ * get watchers of a certain class
+ *
+ * @param section class id
+ * @param notifiedBefore last_notified should be smaller than this
  */
-async function putWatches(chatid: string, watches: string[]) {
-  return Promise.all([
-    db.put(`watching_${chatid}`, watches),
-    watches.length > 0 ? rememberWatchedId(chatid) : forgetWatchedId(chatid),
-  ]);
+export async function getClassWatchers(section: string, notifiedBefore: number) {
+  const watches = (await dynamoClient.query({
+    TableName: watch_table,
+    IndexName: watch_class_to_uid_index,
+    KeyConditions: {
+      class_id: {
+        AttributeValueList: [section.toString()],
+        ComparisonOperator: 'EQ',
+      },
+    },
+  }).promise()).Items as WatchTableItemType[];
+
+  return watches.filter((watch) => _.isNil(watch.last_notified) || watch.last_notified < notifiedBefore);
 }
 
-export async function getWatchedIds() {
-  return (await db.get('watches') || []) as string[];
-}
-
-async function rememberWatchedId(chatid: string) {
-  await db.put('watches', _.uniq([...await getWatchedIds(), chatid]));
-}
-
-async function forgetWatchedId(chatid: string) {
-  await db.put('watches', _.pull(await getWatchedIds(), chatid));
+export async function removeWatch(chatid: string, section: string) {
+  return dynamoClient.delete({
+    TableName: watch_table,
+    Key: {
+      uid: chatid.toString(),
+      class_id: section,
+    },
+  }).promise();
 }
 
 export async function getClassesBySections(sections: string[]) {
@@ -114,5 +149,6 @@ export async function getClassesBySections(sections: string[]) {
 }
 
 export async function getWatchedClasses(chatid: string) {
-  return getClassesBySections(await getWatches(chatid));
+  const watches = await getWatches(chatid);
+  return getClassesBySections(_.map(watches, 'class_id'));
 }

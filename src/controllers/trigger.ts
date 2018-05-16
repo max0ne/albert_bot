@@ -3,9 +3,8 @@ import * as dbg from 'debug';
 
 import * as common from '../common/common';
 import * as AlbertDB from '../models/AlbertDB';
-import * as StatusDB from '../models/StatusDB';
 import * as sync from './sync';
-import { ClassType, SyncStatType } from '../models/albert_types';
+import { ClassType, SyncStatType, WatchTableItemType } from '../models/albert_types';
 import { viewClass, viewClasses } from '../view/view';
 
 const debug = dbg('albert_bot');
@@ -26,27 +25,28 @@ export async function __run(bot: any, nosync = false) {
     await sync.sync();
   }
 
-  // get newly synced
-  const classes = await AlbertDB.getClasses();
+  // send notifications
+  notify(bot);
+}
 
-  // get `used to be closed but now opened` classes
-  const openClasses = classes.filter((cls) =>
-    cls.status === 'Open' &&  // now open
-    (oldClasses.find((old) => old.classNumber === cls.classNumber) || {} as ClassType).status !== 'Open'); // was NOT open
-  const openClassesSections = _.map(openClasses, 'section');
+async function notifyOpenClass(bot: any, watch: WatchTableItemType) {
+  // 0. get class detail
+  const cls = (await AlbertDB.getClassesBySections([watch.class_id]));
 
-  const  watchingChatids = await AlbertDB.getWatchedIds();
-  for (const chatid of watchingChatids) {
-    try {
-      const watchedSections = await AlbertDB.getWatches(chatid);
-      const openedWatchedClassSections = _.intersection(watchedSections, openClassesSections);
-      if (openedWatchedClassSections.length > 0) {
-        await notifyClassOpened(bot, chatid, await AlbertDB.getClassesBySections(openedWatchedClassSections));
-      }
-    } catch (error) {
-      debug(`failed to send notification to ${chatid}`);
-      debug(error);
-    }
+  // 1. send notification
+  bot.telegram.sendMessage(watch.uid, `🎉 Some classes you are watching are opened\n${viewClasses(cls, true)}`, {
+    parse_mode: 'Markdown',
+  });
+
+  // 2. mark as notified
+  await AlbertDB.putLastNotified(watch.uid, watch.class_id);
+}
+
+async function notify(bot: any) {
+  const openSections = (await AlbertDB.getClasses()).filter((cls) => cls.status === 'Open');
+  for (const section of openSections) {
+    const watches = await AlbertDB.getClassWatchers(section.section, Date.now() - 3600 * 1000);
+    await Promise.all(watches.map(notifyOpenClass.bind(bot)));
   }
 }
 
@@ -64,7 +64,11 @@ async function run(bot: any) {
     setTimeout(() => run(bot), Math.max(1, parseFloat(POLL_INTERVAL || 5)) * 60 * 1000);
   }
 }
-
 export function start(bot: any) {
   run(bot);
 }
+
+process.on('unhandledRejection', (reason: string, p: Promise<any>) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  // application specific logging, throwing an error, or other logic here
+});

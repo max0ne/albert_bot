@@ -124,7 +124,7 @@ bot.command('watch', async (ctx: Context) => {
   /**
    * no param - give all `unwatched` classes as options
    */
-  const watching = await AlbertDB.getWatches(chatid);
+  const watching = _.map(await AlbertDB.getWatches(chatid), 'class_id');
   const classes =
     (await AlbertDB.getClasses())
       .filter((cls) => !_.includes(watching, cls.section))
@@ -170,15 +170,18 @@ bot.on('message', async (ctx: Context, next: NextFunction) => {
 });
 
 async function watchClass(chatid: string, section: string, ctx: Context) {
-  const watchings = await AlbertDB.addWatch(chatid, section);
+  await AlbertDB.addWatch(chatid, section);
   ctx.reply(`Added ${viewClass((await AlbertDB.getClassesBySections([section]))[0])} to watching`);
-  ctx.reply(`You are watching ${watchings.length} classes:\n${viewClasses(await AlbertDB.getClassesBySections(watchings))}`);
+  // ctx.reply(`You are watching ${watchings.length} classes:\n${viewClasses(await AlbertDB.getClassesBySections(watchings))}`);
 }
 
 async function unwatchClass(chatid: string, section: string, ctx: Context) {
-  const watchings = await AlbertDB.removeWatch(chatid, section);
-  ctx.reply(`Removed ${viewClass((await AlbertDB.getClassesBySections([section]))[0])} from watching`);
-  ctx.reply(`You are watching ${watchings.length} classes:\n${viewClasses(await AlbertDB.getClassesBySections(watchings))}`);
+  await AlbertDB.removeWatch(chatid, section);
+  console.log('remove watch done');
+
+  // ctx.reply(`Removed ${viewClass((await AlbertDB.getClassesBySections([section]))[0])} from watching`);
+  // const watchings = await AlbertDB.getWatches(chatid);
+  // ctx.reply(`You are watching ${watchings.length} classes`);
 }
 
 /**
