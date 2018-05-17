@@ -3,6 +3,7 @@ import * as dbg from 'debug';
 
 import * as common from '../common/common';
 import * as AlbertDB from '../models/AlbertDB';
+import * as WatchDB from '../models/WatchDB';
 import * as sync from './sync';
 import { ClassType, SyncStatType, WatchTableItemType } from '../models/albert_types';
 import { viewClass, viewClasses } from '../view/view';
@@ -31,7 +32,7 @@ export async function __run(bot: any, nosync = false) {
 
 async function notifyOpenClass(bot: any, watch: WatchTableItemType) {
   // 0. get class detail
-  const cls = (await AlbertDB.getClassesBySections([watch.class_id]));
+  const cls = (await WatchDB.getClassesBySections([watch.class_id]));
 
   // 1. send notification
   bot.telegram.sendMessage(watch.uid, `🎉 Some classes you are watching are opened\n${viewClasses(cls, true)}`, {
@@ -39,13 +40,13 @@ async function notifyOpenClass(bot: any, watch: WatchTableItemType) {
   });
 
   // 2. mark as notified
-  await AlbertDB.putLastNotified(watch.uid, watch.class_id);
+  await WatchDB.putLastNotified(watch.uid, watch.class_id);
 }
 
 async function notify(bot: any) {
   const openSections = (await AlbertDB.getClasses()).filter((cls) => cls.status === 'Open');
   for (const section of openSections) {
-    const watches = await AlbertDB.getClassWatchers(section.section, Date.now() - 3600 * 1000);
+    const watches = await WatchDB.getClassWatchers(section.section, Date.now() - 3600 * 1000);
     await Promise.all(watches.map(notifyOpenClass.bind(bot)));
   }
 }

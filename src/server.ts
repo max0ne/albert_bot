@@ -11,6 +11,7 @@ import * as sync from './controllers/sync';
 import * as trigger from './controllers/trigger';
 
 import * as AlbertDB from './models/AlbertDB';
+import * as WatchDB from './models/WatchDB';
 import * as StatusDB from './models/StatusDB';
 import { ClassType, SyncStatType } from './models/albert_types';
 import { ReplyFunction, NextFunction, Context } from './types';
@@ -124,7 +125,7 @@ bot.command('watch', async (ctx: Context) => {
   /**
    * no param - give all `unwatched` classes as options
    */
-  const watching = _.map(await AlbertDB.getWatches(chatid), 'class_id');
+  const watching = _.map(await WatchDB.getWatches(chatid), 'class_id');
   const classes =
     (await AlbertDB.getClasses())
       .filter((cls) => !_.includes(watching, cls.section))
@@ -170,13 +171,13 @@ bot.on('message', async (ctx: Context, next: NextFunction) => {
 });
 
 async function watchClass(chatid: string, section: string, ctx: Context) {
-  await AlbertDB.addWatch(chatid, section);
-  ctx.reply(`Added ${viewClass((await AlbertDB.getClassesBySections([section]))[0])} to watching`);
+  await WatchDB.addWatch(chatid, section);
+  ctx.reply(`Added ${viewClass((await WatchDB.getClassesBySections([section]))[0])} to watching`);
   // ctx.reply(`You are watching ${watchings.length} classes:\n${viewClasses(await AlbertDB.getClassesBySections(watchings))}`);
 }
 
 async function unwatchClass(chatid: string, section: string, ctx: Context) {
-  await AlbertDB.removeWatch(chatid, section);
+  await WatchDB.removeWatch(chatid, section);
   console.log('remove watch done');
 
   // ctx.reply(`Removed ${viewClass((await AlbertDB.getClassesBySections([section]))[0])} from watching`);
@@ -189,7 +190,7 @@ async function unwatchClass(chatid: string, section: string, ctx: Context) {
  */
 bot.command('watching', async (ctx: Context) => {
   const chatid = ctx.from.id;
-  const watchingClasses = await AlbertDB.getWatchedClasses(chatid);
+  const watchingClasses = await WatchDB.getWatchedClasses(chatid);
   ctx.reply(`You are watching ${watchingClasses.length} classes:\n${viewClasses(watchingClasses)}`);
 });
 
@@ -199,7 +200,7 @@ bot.command('watching', async (ctx: Context) => {
 bot.command('unwatch', async (ctx: Context) => {
   const chatid = ctx.from.id;
 
-  const classes = await AlbertDB.getWatchedClasses(chatid);
+  const classes = await WatchDB.getWatchedClasses(chatid);
   if (classes.length === 0) {
     ctx.reply('You are not watching any classes');
     return;
